@@ -47,6 +47,16 @@ TEST(TestCaseNameB, TestName1)
 
 
 	//-----------------------------------------------------------------------
+#if 0
+	EXPECT_CALL(comm, communicate())
+		.WillOnce(testing::Return(9)); // 가짜로 9을 리턴
+	app.run();
+
+	app.run(); // FAILED
+#endif
+
+
+	//-----------------------------------------------------------------------
 	EXPECT_CALL(comm, communicate())
 		.WillRepeatedly(testing::Return(10)); // 가짜로 10을 리턴
 
