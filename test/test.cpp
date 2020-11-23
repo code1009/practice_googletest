@@ -26,6 +26,36 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 //===========================================================================
+class fake_communication : public communication
+{
+public:
+	virtual int communicate(void)
+	{
+		printf("fake_communication::communicate()\n");
+
+		return 100;
+	}
+};
+
+class mock_fake_communication : public communication
+{
+public:
+	MOCK_METHOD(int, communicate, (), (override));
+
+public:
+	void delegate_to_fake(void)
+	{
+		ON_CALL(*this, communicate()).WillByDefault(testing::Invoke(&_fake, &fake_communication::communicate));
+	}
+
+private:
+	fake_communication _fake;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//===========================================================================
 TEST(TestCaseNameA, TestName0) 
 {
 	application app;
@@ -146,6 +176,35 @@ TEST(TestCaseNameD, TestName4)
 	EXPECT_EQ(0, comm.communicate()); // Mock 호출
 }
 
+//===========================================================================
+TEST(TestCaseNameE, TestName5) 
+{
+	//-----------------------------------------------------------------------
+	application app;
+	mock_fake_communication comm;
+
+
+	app._communication = &comm;
+
+
+	//-----------------------------------------------------------------------
+	EXPECT_CALL(comm, communicate())
+		.Times(testing::AtLeast(1));
+
+	
+	//-----------------------------------------------------------------------
+	comm.delegate_to_fake();
+
+
+	//-----------------------------------------------------------------------
+	int n;
+
+
+	n = app.run();
+
+
+	EXPECT_EQ(n, 100);
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
